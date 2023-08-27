@@ -1,7 +1,6 @@
 package moe.fuqiuluo.api
 
-import BuildConfig
-import CONFIG
+import com.lingchen.core.GlobalConfig
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -20,14 +19,22 @@ data class APIResult<T>(
 @Serializable
 data class APIInfo(
     val version: String,
-    val protocol: Protocol
+    val protocols: ArrayList<Protocol>
 )
-
 fun Routing.index() {
+    val protocols = arrayListOf<Protocol>()
+    for (app in GlobalConfig.AppInfoMap) {
+        val protocol = Protocol(app.value.Qua, app.value.Apk_V!!, app.value.versionCode.toString())
+        protocols.add(protocol)
+    }
     get("/") {
-        call.respond(APIResult(0, "IAA 云天明 章北海", APIInfo(
-            version = BuildConfig.version,
-            protocol = CONFIG.protocol
-        )))
+        call.respond(
+            APIResult(
+                0, "IAA 云天明 章北海", APIInfo(
+                    version = BuildConfig.version,
+                    protocols = ArrayList(protocols)
+                )
+            )
+        )
     }
 }

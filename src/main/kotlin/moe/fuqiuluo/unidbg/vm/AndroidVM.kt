@@ -1,6 +1,5 @@
 package moe.fuqiuluo.unidbg.vm
 
-import CONFIG
 import com.github.unidbg.arm.backend.DynarmicFactory
 import com.github.unidbg.arm.backend.Unicorn2Factory
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder
@@ -9,6 +8,7 @@ import com.github.unidbg.linux.android.dvm.DalvikModule
 import com.github.unidbg.linux.android.dvm.DalvikVM64
 import com.github.unidbg.linux.android.dvm.DvmClass
 import com.github.unidbg.virtualmodule.android.AndroidModule
+import com.lingchen.core.GlobalConfig
 import org.apache.commons.logging.LogFactory
 import java.io.Closeable
 import java.io.File
@@ -27,15 +27,15 @@ open class AndroidVM(packageName: String, dynarmic: Boolean, unicorn: Boolean): 
     internal val vm = emulator.createDalvikVM()!!
 
     init {
-        if (CONFIG.unidbg.debug) {
+        if (GlobalConfig.unidbg.debug) {
             System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog")
             System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "debug")
             LogFactory.getFactory()
                 .attributeNames.forEach { println(it) }
         }
-        vm.setVerbose(CONFIG.unidbg.debug)
+        vm.setVerbose(GlobalConfig.unidbg.debug)
         val syscall = emulator.syscallHandler
-        syscall.isVerbose = CONFIG.unidbg.debug
+        syscall.isVerbose = GlobalConfig.unidbg.debug
         syscall.setEnableThreadDispatcher(true)
         AndroidModule(emulator, vm).register(memory)
     }

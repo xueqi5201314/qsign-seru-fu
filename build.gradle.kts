@@ -61,12 +61,12 @@ distributions {
 
 tasks {
     register("generateProjectFile") {
-        val dir = File("src/main/java/project").apply { mkdirs() }
+        val dir = File("src/main/java").apply { mkdirs() }
         dir.resolve("BuildConfig.java").also {
             if (!it.exists()) it.createNewFile()
         }.writer().use {
             it.write("public class BuildConfig {")
-            it.write("    public static String version = \"${project.version}\";")
+            it.write("\n\tpublic static String version = \"${project.version}\";")
             it.write("}")
         }
     }

@@ -1,13 +1,14 @@
 package moe.fuqiuluo.api
 
-import CONFIG
+import com.lingchen.core.GlobalConfig
+import com.lingchen.models.EnvData
 import com.tencent.crypt.Crypt
 import com.tencent.mobileqq.qsec.qsecdandelionsdk.Dandelion
 import com.tencent.secprotocol.ByteData
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import moe.fuqiuluo.comm.EnvData
+
 import moe.fuqiuluo.ext.failure
 import moe.fuqiuluo.ext.fetchGet
 import moe.fuqiuluo.ext.hex2ByteArray
@@ -22,14 +23,28 @@ fun Routing.energy() {
         val uin = fetchGet("uin")!!.toLong()
         val data = fetchGet("data")!!
         val salt = fetchGet("salt")!!.hex2ByteArray()
-
+        val qua = fetchGet("qua")!!
+        val qimei36=fetchGet("qimei36","")
         val session = initSession(uin) ?: run {
             val androidId = fetchGet("android_id", def = "")
             val guid = fetchGet("guid", def = "")
             if (androidId.isNullOrEmpty() || guid.isNullOrEmpty()) {
                 throw MissingKeyError
             }
-            SessionManager.register(EnvData(uin, androidId, guid.lowercase(), "", CONFIG.protocol.qua, CONFIG.protocol.version, CONFIG.protocol.code))
+            val apkVersion:String=  qua.split('_')[3]
+            if (!GlobalConfig.AppInfoMap.containsKey(apkVersion)){
+                throw MissingQQVersionError
+            }
+            val app = GlobalConfig.AppInfoMap[apkVersion]!!
+            SessionManager.register(
+                EnvData(
+                    uin,
+                    androidId,
+                    guid.lowercase(),
+                    qimei36!!,
+                    app
+                )
+            )
             findSession(uin)
         }
 
@@ -42,13 +57,27 @@ fun Routing.energy() {
     get("/get_byte") {
         val uin = fetchGet("uin")!!.toLong()
         val guid = fetchGet("guid", err = "lack of guid") ?: return@get
-
+        val qua = fetchGet("qua")!!
+        val qimei36=fetchGet("qimei36","")
         val session = initSession(uin) ?: run {
             val androidId = fetchGet("android_id", def = "")
             if (androidId.isNullOrEmpty() || guid.isEmpty()) {
                 throw MissingKeyError
             }
-            SessionManager.register(EnvData(uin, androidId, guid.lowercase(), "", CONFIG.protocol.qua, CONFIG.protocol.version, CONFIG.protocol.code))
+            val apkVersion:String=  qua.split('_')[3]
+            if (!GlobalConfig.AppInfoMap.containsKey(apkVersion)){
+                throw MissingQQVersionError
+            }
+            val app = GlobalConfig.AppInfoMap[qua]!!
+            SessionManager.register(
+                EnvData(
+                    uin,
+                    androidId,
+                    guid.lowercase(),
+                    qimei36!!,
+                    app
+                )
+            )
             findSession(uin)
         }
 
@@ -131,13 +160,27 @@ fun Routing.energy() {
 
     get("/energy") {
         val uin = fetchGet("uin")!!.toLong()
+        val qua = fetchGet("qua")!!
         val session = initSession(uin) ?: run {
             val androidId = fetchGet("android_id", def = "")
             val guid = fetchGet("guid", def = "")
             if (androidId.isNullOrEmpty() || guid.isNullOrEmpty()) {
                 throw MissingKeyError
             }
-            SessionManager.register(EnvData(uin, androidId, guid.lowercase(), "", CONFIG.protocol.qua, CONFIG.protocol.version, CONFIG.protocol.code))
+            val apkVersion:String=  qua.split('_')[3]
+            if (!GlobalConfig.AppInfoMap.containsKey(apkVersion)){
+                throw MissingQQVersionError
+            }
+            val app = GlobalConfig.AppInfoMap[qua]!!
+            SessionManager.register(
+                EnvData(
+                    uin,
+                    androidId,
+                    guid.lowercase(),
+                    "",
+                    app
+                )
+            )
             findSession(uin)
         }
 

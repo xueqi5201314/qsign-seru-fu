@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 package moe.fuqiuluo.comm
 
-import CONFIG
+import com.lingchen.models.MobileDevice
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,19 +13,6 @@ data class Server(
     var port: Int
 )
 
-@Serializable
-data class EnvData(
-    var uin: Long,
-    @JsonNames("androidId", "android_id", "imei")
-    var androidId: String,
-    var guid: String,
-    var qimei36: String,
-
-    var qua: String = CONFIG.protocol.qua,
-    var version: String = CONFIG.protocol.version,
-    var code: String = CONFIG.protocol.code,
-    var packageName: String = CONFIG.protocol.packageName ?: "com.tencent.mobileqq",
-)
 
 @Serializable
 data class Protocol(
@@ -35,7 +22,6 @@ data class Protocol(
     @SerialName("package_name")
     var packageName: String? = null,
 )
-
 @Serializable
 data class UnidbgConfig(
     var dynarmic: Boolean,
@@ -54,10 +40,9 @@ data class QSignConfig(
     var protocol: Protocol,
     var unidbg: UnidbgConfig,
     @JsonNames("blackList", "black_list")
-    var blackList: List<Long>? = null
+    var blackList: List<Long> = listOf()
 )
 
 fun QSignConfig.checkIllegal() {
     require(server.port in 1 .. 65535) { "Port is out of range." }
-    //require(reloadInterval in 20 .. 50) { "ReloadInterval is out of range." }
 }

@@ -8,10 +8,10 @@ class ArgsParser(
     private val map = hashMapOf<String, String>()
 
     init {
-        args.forEach {
+        args.forEach { it ->
             it.substring(if (it.startsWith("--")) 2
             else if (it.startsWith("-")) 1
-            else error("Not support the expr.")).split("=").also {
+            else error("Not support the expr.")).split("=").also { it ->
                 map[it[0]] = it.slice(1 until it.size).joinToString("")
             }
         }

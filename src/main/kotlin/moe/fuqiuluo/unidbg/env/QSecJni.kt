@@ -2,16 +2,15 @@
 
 package moe.fuqiuluo.unidbg.env
 
-import CONFIG
 import com.github.unidbg.linux.android.dvm.*
 import com.github.unidbg.linux.android.dvm.array.ArrayObject
+import com.lingchen.core.GlobalConfig
+import com.lingchen.models.EnvData
 import com.tencent.mobileqq.channel.SsoPacket
-import com.tencent.mobileqq.dt.model.FEBound
 import com.tencent.mobileqq.qsec.qsecest.SelfBase64
 import com.tencent.mobileqq.qsec.qsecurity.DeepSleepDetector
 import com.tencent.mobileqq.sign.QQSecuritySign
 import kotlinx.coroutines.sync.Mutex
-import moe.fuqiuluo.comm.EnvData
 import moe.fuqiuluo.ext.toHexString
 import moe.fuqiuluo.unidbg.QSecVM
 import moe.fuqiuluo.unidbg.vm.GlobalData
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.security.SecureRandom
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -34,7 +32,7 @@ class QSecJni(
 ) : AbstractJni() {
     override fun getStaticIntField(vm: BaseVM, dvmClass: DvmClass, signature: String): Int {
         if (signature == "android/os/Build\$VERSION->SDK_INT:I") {
-            return 26
+            return envData.device.SDK_INT()
         }
         return super.getStaticIntField(vm, dvmClass, signature)
     }
@@ -50,13 +48,13 @@ class QSecJni(
         if (signature == "com/tencent/mobileqq/fe/IFEKitLog->i(Ljava/lang/String;ILjava/lang/String;)V") {
             val tag = vaList.getObjectArg<StringObject>(0)
             val msg = vaList.getObjectArg<StringObject>(2)
-            println(tag.value + "info: " + msg.value)
+            logger.debug(tag.value + "info: " + msg.value)
             return
         }
         if (signature == "com/tencent/mobileqq/fe/IFEKitLog->e(Ljava/lang/String;ILjava/lang/String;)V") {
             val tag = vaList.getObjectArg<StringObject>(0)
             val msg = vaList.getObjectArg<StringObject>(2)
-            println(tag.value + "error: " + msg.value)
+            logger.debug(tag.value + "error: " + msg.value)
             return
         }
         if (signature == "com/tencent/mobileqq/channel/ChannelProxy->sendMessage(Ljava/lang/String;[BJ)V") {
@@ -67,7 +65,7 @@ class QSecJni(
 
             if (callbackId == -1L) return
 
-            println("uin = ${global["uin"]}, id = $callbackId, sendPacket(cmd = $cmd, data = $hex)")
+            logger.debug("uin = {}, id = {}, sendPacket(cmd = {}, data = {})", global["uin"], callbackId, cmd, hex)
             (global["PACKET"] as ArrayList<SsoPacket>).add(SsoPacket(cmd, hex, callbackId))
             (global["mutex"] as Mutex).also { if (it.isLocked) it.unlock() }
             return
@@ -180,9 +178,9 @@ class QSecJni(
         if (signature == "com/tencent/mobileqq/dt/model/FEBound->transform(I[B)[B") {
             val mode = vaList.getIntArg(0)
             val data = vaList.getObjectArg<DvmObject<*>>(1).value as ByteArray
-            val result = FEBound.transform(mode, data)
+            val result =envData.appInfo.feBound.transform(mode, data)
             if (mode == 1)
-                println("FEBound.transform(${data.toHexString()}) => ${result?.toHexString()}")
+                logger.debug("FEBound.transform(${data.toHexString()}) => ${result?.toHexString()}")
             return BytesObject(vm, result)
         }
         if (signature == "java/lang/ClassLoader->getSystemClassLoader()Ljava/lang/ClassLoader;") {
@@ -195,12 +193,12 @@ class QSecJni(
                     "ro.build.id" -> "TKQ1.220905.001"
                     "ro.build.display.id" -> "TKQ1.220905.001 test-keys"
                     "ro.product.device", "ro.product.name" -> "mondrian"
-                    "ro.product.board" -> "taro"
-                    "ro.product.manufacturer" -> "Xiaomi"
-                    "ro.product.brand" -> "Redmi"
+                    "ro.product.board" ->envData.device.Board
+                    "ro.product.manufacturer" -> envData.device.Manufacturer
+                    "ro.product.brand" ->envData.device.Brand
                     "ro.bootloader" -> "unknown"
                     "persist.sys.timezone" -> "Asia/Shanghai"
-                    "ro.hardware" -> "qcom"
+                    "ro.hardware" -> envData.device.Hardware
                     "ro.product.cpu.abilist" -> "arm64-v8a, armeabi-v7a, armeabi"
                     "ro.build.version.incremental" -> "V14.0.18.0.CNMLGB"
                     "ro.build.version.release" -> "8.0"
@@ -318,7 +316,7 @@ class QSecJni(
                 74 -> "200" // screen_brightness
                 75 -> Random.nextInt(0 .. 500000).toString()
                 76 -> "1,20,50"
-                77 -> (1024 * 1024 * 1024 * 32).toString()
+                77 -> (1024L * 1024 * 1024 * 32).toString()
                 78 -> "0" // su Bin
                 79 -> "1.1.2"
                 81 -> "zh"
@@ -469,14 +467,14 @@ class QSecJni(
             && envData.packageName == "com.tencent.mobileqq") {
             return false
         }
-        if (CONFIG.unidbg.debug) {
-            println("Accept ${ if (isStatic) "static" else "" } $signature")
+        if (GlobalConfig.unidbg.debug) {
+            logger.debug("Accept ${ if (isStatic) "static" else "" } $signature")
         }
         return super.acceptMethod(dvmClass, signature, isStatic)
     }
 
     override fun toReflectedMethod(vm: BaseVM?, dvmClass: DvmClass?, signature: String?): DvmObject<*> {
-        //println("toReflectedMethod")
+        //logger.debug("toReflectedMethod")
         return super.toReflectedMethod(vm, dvmClass, signature)
     }
 
