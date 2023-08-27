@@ -1,17 +1,18 @@
 package moe.fuqiuluo.unidbg.session
 
-import CONFIG
-import BASE_PATH
+import com.lingchen.core.GlobalConfig
 import com.tencent.mobileqq.channel.SsoPacket
 import com.tencent.mobileqq.fe.FEKit
 import kotlinx.coroutines.sync.Mutex
-import moe.fuqiuluo.comm.EnvData
+import com.lingchen.models.EnvData
+import io.ktor.util.date.*
 import moe.fuqiuluo.unidbg.QSecVM
 
 class Session(envData: EnvData) {
     internal val vm: QSecVM =
-        QSecVM(BASE_PATH, envData, CONFIG.unidbg.dynarmic, CONFIG.unidbg.unicorn)
+        QSecVM(envData.appInfo.workPath!!, envData, GlobalConfig.unidbg.dynarmic, GlobalConfig.unidbg.unicorn)
     internal val mutex = Mutex()
+    internal val startTime: Long = getTimeMillis() / 1000
 
     init {
         vm.global["PACKET"] = arrayListOf<SsoPacket>()

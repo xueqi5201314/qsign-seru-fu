@@ -1,9 +1,8 @@
 package moe.fuqiuluo.api
 
-import CONFIG
-import kotlinx.coroutines.GlobalScope
+import com.lingchen.core.GlobalConfig
+import io.ktor.util.date.*
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import moe.fuqiuluo.unidbg.session.Session
 import moe.fuqiuluo.unidbg.session.SessionManager
 import kotlin.concurrent.timer
@@ -12,7 +11,13 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 fun initSession(uin: Long): Session? {
-    return SessionManager[uin] ?: if (!CONFIG.autoRegister) {
+    val session = SessionManager[uin]
+    if (session != null) {
+        if (getTimeMillis() / 1000 - session.startTime > 5 * 60) {
+            return null
+        }
+    }
+    return session ?: if (!GlobalConfig.autoRegister) {
         throw SessionNotFoundError
     } else {
         null
@@ -45,6 +50,7 @@ private suspend inline fun <T> Mutex.withLockAndTimeout(timeout: Long, action: (
     } finally {
         try {
             unlock()
-        } catch (e: java.lang.Exception) {}
+        } catch (e: java.lang.Exception) {
+        }
     }
 }

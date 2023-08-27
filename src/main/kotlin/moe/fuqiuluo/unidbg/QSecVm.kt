@@ -2,7 +2,7 @@ package moe.fuqiuluo.unidbg
 
 import com.github.unidbg.linux.android.dvm.DvmObject
 import com.tencent.mobileqq.qsec.qsecurity.DeepSleepDetector
-import moe.fuqiuluo.comm.EnvData
+import com.lingchen.models.EnvData
 import moe.fuqiuluo.unidbg.env.FileResolver
 import moe.fuqiuluo.unidbg.env.QSecJni
 import moe.fuqiuluo.unidbg.vm.AndroidVM

@@ -1,6 +1,5 @@
 package moe.fuqiuluo.unidbg.env
 
-import CONFIG
 import com.github.unidbg.Emulator
 import com.github.unidbg.file.FileResult
 import com.github.unidbg.file.linux.AndroidFileIO
@@ -9,15 +8,14 @@ import com.github.unidbg.linux.file.ByteArrayFileIO
 import com.github.unidbg.linux.file.DirectoryFileIO
 import com.github.unidbg.linux.file.SimpleFileIO
 import com.github.unidbg.unix.UnixEmulator
-import io.ktor.server.config.*
+import com.lingchen.core.GlobalConfig
 import moe.fuqiuluo.ext.hex2ByteArray
 import moe.fuqiuluo.unidbg.QSecVM
 import moe.fuqiuluo.unidbg.env.files.fetchCpuInfo
 import moe.fuqiuluo.unidbg.env.files.fetchMemInfo
 import moe.fuqiuluo.unidbg.env.files.fetchStat
 import moe.fuqiuluo.unidbg.env.files.fetchStatus
-import java.io.File
-import java.util.UUID
+import java.util.*
 import java.util.logging.Logger
 
 class FileResolver(
@@ -129,10 +127,10 @@ class FileResolver(
             || path == "/proc/${emulator.pid}/cmdline"
             || path == "/proc/stat/cmdline" // an error case
         ) {
-            if (vm.envData.packageName == "com.tencent.tim") {
-                return FileResult.success(ByteArrayFileIO(oflags, path, vm.envData.packageName.toByteArray()))
+            return if (vm.envData.packageName == "com.tencent.tim") {
+                FileResult.success(ByteArrayFileIO(oflags, path, vm.envData.packageName.toByteArray()))
             } else {
-                return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}:MSF".toByteArray()))
+                FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}:MSF".toByteArray()))
             }
         }
 
@@ -172,7 +170,7 @@ class FileResolver(
         }
 
         if (path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/lib/arm64") {
-            if (CONFIG.unidbg.debug)
+            if (GlobalConfig.unidbg.debug)
                 println("尝试获取library| 但是我不给")
             //return FileResult.success(DirectoryFileIO(oflags, path,
             //    DirectoryFileIO.DirectoryEntry(true, "libfekit.so"),
@@ -181,12 +179,12 @@ class FileResolver(
 
         if(path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/base.apk") {
             val f = tmpFilePath.resolve("QQ.apk")
-            if (f.exists()) {
-                return FileResult.success(SimpleFileIO(oflags, tmpFilePath.resolve("QQ.apk").also {
+            return if (f.exists()) {
+                FileResult.success(SimpleFileIO(oflags, tmpFilePath.resolve("QQ.apk").also {
                     if (!it.exists()) it.createNewFile()
                 }, path))
             } else {
-                return FileResult.failed(UnixEmulator.ENOENT)
+                FileResult.failed(UnixEmulator.ENOENT)
             }
         }
 
@@ -207,10 +205,10 @@ class FileResolver(
         }
 
         if (path.startsWith("/data/user/")) {
-            if (path != "/data/user/0" && path != "/data/user/999") {
-                return FileResult.failed(UnixEmulator.ENOENT)
+            return if (path != "/data/user/0" && path != "/data/user/999") {
+                FileResult.failed(UnixEmulator.ENOENT)
             } else {
-                return FileResult.failed(UnixEmulator.EACCES)
+                FileResult.failed(UnixEmulator.EACCES)
             }
         }
 
