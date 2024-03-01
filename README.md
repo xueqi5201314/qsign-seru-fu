@@ -77,3 +77,14 @@ POST的内容："uin=" + uin + "&qua=" + qua + "&cmd=" + cmd + "&seq=" + seq + "
  - 昵称：**RinsToln** QQ：339***8297302
  - 昵称：**菩提** QQ：919***595
  - 
+| 项目     | 地址                                                                                     |
+|--------|----------------------------------------------------------------------------------------|
+| 初始项目   | https://gitee.com/link?target=https%3A%2F%2Fgithub.com%2Ffuqiuluo%2Funidbg-fetch-qsign |
+| 版本文件提供 | https://gitee.com/touchscale/Qsign                                                     |
+| 版本文件提供 | https://github.com/CikeyQi/unidbg-fetch-qsign-shell                                    |
+|        |                                                                                        |
+|        |                                                                                        |
+|        |                                                                                        |
+
+
+
