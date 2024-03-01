@@ -1,0 +1,8 @@
+<service>
+  <id>unidbg-fetch-qsign</id>
+  <name>unidbg-fetch-qsign</name>
+  <description>unidbg-fetch-qsign Service</description>
+  <executable>bin\unidbg-fetch-qsign.bat</executable>
+  <arguments>--basePath=txlib\8.9.73</arguments>
+  <logmode>rotate</logmode>
+</service>
