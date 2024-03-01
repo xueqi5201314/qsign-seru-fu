@@ -1,7 +1,7 @@
 {
   "server": {
     "host": "0.0.0.0",
-    "port": 801
+    "port": 8080
   },
   "key": "114514",
   "auto_register": true,
@@ -12,8 +12,9 @@
     "code": "4264"
   },
   "unidbg": {
-    "dynarmic": false,
+    "dynarmic": true,
     "unicorn": true,
+    "kvm": false,
     "debug": false
   },
   "black_list": [
